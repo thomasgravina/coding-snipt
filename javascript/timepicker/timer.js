@@ -1,10 +1,9 @@
-$(function() {
+(function( timer, $, undefined ) {
 
-  var defaultTime = '9:00am';
-  // Useful to restore previous value in case wrong value is typed.
-  var saved = {};
+  var defaultTime = '9:00am',
+    saved = {}; // Useful to restore previous value in case wrong value is typed.
 
-  var generateTimes = function(increment) {
+  function generateTimes(increment) {
     var times = [];
     var startDay = 26;
     //var increment = 30; // minutes
@@ -14,9 +13,21 @@ $(function() {
       date = new Date(date.getTime() + increment * 60000);
     }
     return formatTimes(times);
-  };
+  }
 
-  var formatTimes = function(dates) {
+  function generateTimes(increment) {
+    var times = [];
+    var startDay = 26;
+    //var increment = 30; // minutes
+    var date = new Date(2013, 6, startDay, 0, 0, 0, 0);
+    while (date.getDate() === startDay) {
+      times.push(date);
+      date = new Date(date.getTime() + increment * 60000);
+    }
+    return formatTimes(times);
+  }
+
+  function formatTimes(dates) {
     var formattedTimes = [];
     var am = true;
     for (var i = 0; i < dates.length; i++) {
@@ -29,14 +40,12 @@ $(function() {
       formattedTimes.push(s);
     }
     return formattedTimes;
-  };
+  }
 
   var validTime = function(value) {
-
     var regex = /^\d{1,2}:\d{2}\s?[ap]m$/i;
     if (!$.trim(value).match(regex))
       return false;
-
     var data = value.split(':');
     var hours = parseInt(data[0]);
     var minutes = parseInt(data[1].substring(0, 2));
@@ -44,8 +53,7 @@ $(function() {
       return false;
     }
     return true;
-
-  };
+  }
 
   $('.time-picker').each(function() {
     if (!validTime($(this).val())) {
@@ -88,4 +96,5 @@ $(function() {
     $(this).parent().prev().val(time);
   });
 
-});
+
+}( window.timer = window.timer || {}, jQuery ));
