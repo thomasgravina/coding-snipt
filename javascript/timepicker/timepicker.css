@@ -4,15 +4,19 @@ div.list-abs {
   position: absolute;
   overflow-y: auto;
   border: 1px solid #BFB6B9;
+  background-color: white;
 }
 
 div.list-abs > div {
   cursor: pointer;
-  height: 20px;
-  padding-top: 5px;
+  height: 25px;
   padding-left: 5px;
 }
 
 div.list-abs > div:hover {
+  background-color: #D3EDED;
+}
+
+.list-abs div.selected {
   background-color: #D3EDED;
 }

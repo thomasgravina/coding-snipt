@@ -6,19 +6,6 @@
   function generateTimes(increment) {
     var times = [];
     var startDay = 26;
-    //var increment = 30; // minutes
-    var date = new Date(2013, 6, startDay, 0, 0, 0, 0);
-    while (date.getDate() === startDay) {
-      times.push(date);
-      date = new Date(date.getTime() + increment * 60000);
-    }
-    return formatTimes(times);
-  }
-
-  function generateTimes(increment) {
-    var times = [];
-    var startDay = 26;
-    //var increment = 30; // minutes
     var date = new Date(2013, 6, startDay, 0, 0, 0, 0);
     while (date.getDate() === startDay) {
       times.push(date);
@@ -42,6 +29,43 @@
     return formattedTimes;
   }
 
+  function computeEscape() {
+    $(':focus').blur();
+    $('.list-abs:visible').hide();
+  }
+
+  function computeEnter(this_) {
+    $(this_).val($('.list-abs:visible div.selected').data('time'));
+    $(this_).next().hide();
+    $(':focus').blur();
+  }
+
+  function computeKeyDown() {
+    if ($('.list-abs:visible').length === 0) {
+      $(':focus').focus();
+    }
+    if ($('.list-abs div.selected').data('time') == '11:30pm') {
+      return;
+    }
+    var next = $('.list-abs div.selected').next();
+    $('.list-abs div.selected').removeClass('selected');
+    next.addClass('selected');
+    $('.list-abs:visible').scrollTop(($('.list-abs:visible div.selected').index() - 2) * $('.list-abs:visible div.selected').height());
+  }
+
+  function computeKeyUp() {
+    if ($('.list-abs:visible').length === 0) {
+      $(':focus').focus();
+    }
+    if ($('.list-abs div.selected').data('time') == '12:00am') {
+      return;
+    }
+    var prev = $('.list-abs div.selected').prev();
+    $('.list-abs div.selected').removeClass('selected');
+    prev.addClass('selected');
+    $('.list-abs:visible').scrollTop(($('.list-abs:visible div.selected').index() - 2) * $('.list-abs:visible div.selected').height());
+  }
+
   var validTime = function(value) {
     var regex = /^\d{1,2}:\d{2}\s?[ap]m$/i;
     if (!$.trim(value).match(regex))
@@ -53,7 +77,7 @@
       return false;
     }
     return true;
-  }
+  };
 
   $('.time-picker').each(function() {
     if (!validTime($(this).val())) {
@@ -78,9 +102,13 @@
   $(document).on('focus', '.time-picker', function() {
     saved[this.id] = $(this).val();
     $('.list-abs:visible').hide();
-    $(this).next().width($(this).width());
-    $(this).next().offset({ left: $(this).position().left });
-    $(this).next().show();
+    $('.list-abs div.selected').removeClass('selected');
+    var next = $(this).next();
+    next.width($(this).width());
+    next.offset({ left: $(this).position().left });
+    $(next).children().filter('div[data-time="' + $(this).val() + '"]').addClass('selected'); // select current element.
+    next.show();
+    next.scrollTop($(next).children().filter('div[data-time="' + $(this).val() + '"]').index() * $($('.list-abs:visible').children()[0]).height());
   });
 
   $(document).on('click', '.time-picker', function(event) {
@@ -91,10 +119,30 @@
     $('.list-abs:visible').hide();
   });
 
+  $('.time-picker').on('keydown', function(event) {
+    var keyCode = event.keyCode || event.which;
+    switch (keyCode) {
+      case 27: // escape key
+        computeEscape();
+        break;
+      case 13: //enter key
+        event.preventDefault();
+        computeEnter(this);
+        break;
+      case 40: // down key
+        event.preventDefault();
+        computeKeyDown();
+        break;
+      case 38: // up key
+        event.preventDefault();
+        computeKeyUp();
+        break;
+    }
+  });
+
   $('.list-abs').on('click', 'div', function() {
     var time = $(this).data('time');
     $(this).parent().prev().val(time);
   });
-
 
 }( window.timer = window.timer || {}, jQuery ));
