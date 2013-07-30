@@ -35,9 +35,10 @@
   }
 
   function computeEnter(this_) {
+    if ($('.list-abs:visible').length === 0)
+      return;
     $(this_).val($('.list-abs:visible div.selected').data('time'));
     $(this_).next().hide();
-    $(':focus').blur();
   }
 
   function computeKeyDown() {
@@ -45,6 +46,11 @@
       $(':focus').focus();
     }
     if ($('.list-abs div.selected').data('time') == '11:30pm') {
+      return;
+    }
+    if ($('.list-abs div.selected').length === 0) {
+      console.log('zeeerooooooo');
+      $('.list-abs div:first-child').addClass('selected');
       return;
     }
     var next = $('.list-abs div.selected').next();
@@ -58,6 +64,11 @@
       $(':focus').focus();
     }
     if ($('.list-abs div.selected').data('time') == '12:00am') {
+      return;
+    }
+    if ($('.list-abs div.selected').length === 0) {
+      console.log('zeeerooooooo');
+      $('.list-abs div:first-child').addClass('selected');
       return;
     }
     var prev = $('.list-abs div.selected').prev();
@@ -104,8 +115,12 @@
     $('.list-abs:visible').hide();
     $('.list-abs div.selected').removeClass('selected');
     var next = $(this).next();
-    next.width($(this).width());
-    next.offset({ left: $(this).position().left });
+    next.width($(this).outerWidth());
+    next.css({
+      position: "absolute",
+      top: $(this).position().top + $(this).outerHeight(),
+      left: $(this).position().left
+    });
     $(next).children().filter('div[data-time="' + $(this).val() + '"]').addClass('selected'); // select current element.
     next.show();
     next.scrollTop($(next).children().filter('div[data-time="' + $(this).val() + '"]').index() * $($('.list-abs:visible').children()[0]).height());
@@ -119,23 +134,26 @@
     $('.list-abs:visible').hide();
   });
 
-  $('.time-picker').on('keydown', function(event) {
+  $(document).on('keydown', '.time-picker', function(event) {
     var keyCode = event.keyCode || event.which;
     switch (keyCode) {
-      case 27: // escape key
-        computeEscape();
+      case 9: // Tab key
+        computeEnter(this);
         break;
-      case 13: //enter key
+      case 13: // Enter key
         event.preventDefault();
         computeEnter(this);
         break;
-      case 40: // down key
-        event.preventDefault();
-        computeKeyDown();
+      case 27: // Escape key
+        computeEscape();
         break;
-      case 38: // up key
+      case 38: // Up key
         event.preventDefault();
         computeKeyUp();
+        break;
+      case 40: // Down key
+        event.preventDefault();
+        computeKeyDown();
         break;
     }
   });
