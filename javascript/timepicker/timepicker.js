@@ -37,7 +37,7 @@
   function computeEnter(this_) {
     if ($('.list-abs:visible').length === 0)
       return;
-    $(this_).val($('.list-abs:visible div.selected').data('time'));
+    $(this_).val($('.list-abs:visible div.selected').data('value'));
     $(this_).next().hide();
   }
 
@@ -45,15 +45,14 @@
     if ($('.list-abs:visible').length === 0) {
       $(':focus').focus();
     }
-    if ($('.list-abs div.selected').data('time') == '11:30pm') {
+    if ($('.list-abs div.selected').data('value') == '11:30pm') {
       return;
     }
     if ($('.list-abs div.selected').length === 0) {
-      console.log('zeeerooooooo');
       $('.list-abs div:first-child').addClass('selected');
       return;
     }
-    var next = $('.list-abs div.selected').next();
+    var next = $('.list-abs:visible div.selected').nextUntil('', ':not(.hide)').first();
     $('.list-abs div.selected').removeClass('selected');
     next.addClass('selected');
     $('.list-abs:visible').scrollTop(($('.list-abs:visible div.selected').index() - 2) * $('.list-abs:visible div.selected').height());
@@ -63,15 +62,14 @@
     if ($('.list-abs:visible').length === 0) {
       $(':focus').focus();
     }
-    if ($('.list-abs div.selected').data('time') == '12:00am') {
+    if ($('.list-abs div.selected').data('value') == '12:00am') {
       return;
     }
     if ($('.list-abs div.selected').length === 0) {
-      console.log('zeeerooooooo');
       $('.list-abs div:first-child').addClass('selected');
       return;
     }
-    var prev = $('.list-abs div.selected').prev();
+    var prev = $('.list-abs:visible div.selected').prevUntil('', ':not(.hide)').first();
     $('.list-abs div.selected').removeClass('selected');
     prev.addClass('selected');
     $('.list-abs:visible').scrollTop(($('.list-abs:visible div.selected').index() - 2) * $('.list-abs:visible div.selected').height());
@@ -97,10 +95,28 @@
     var times = generateTimes($(this).data('increment') != undefined ? $(this).data('increment') : 30);
     var html = '<div class="list-abs">';
     for (var i = 0; i < times.length; i++) {
-      html += '<div data-time="' + times[i] + '">' + times[i] + '</div>';
+      html += '<div data-value="' + times[i] + '">' + times[i] + '</div>';
     }
     html += '</div>';
     $(this).after(html);
+  });
+
+  $(document).on('keyup', '.time-picker-tz', function(event) {
+    var keyCode = event.keyCode || event.which;
+    if (keyCode == 38 || keyCode == 40)
+      return;
+    var value = $(this).val().replace(' ', '_');
+    var next = $(this).next();
+    var children = next.children();
+    children.each(function() {
+      $(this).removeClass('selected');
+      if ($(this).data('value').indexOf(value) == -1) {
+        $(this).addClass('hide');
+      } else {
+        $(this).removeClass('hide');
+      }
+    });
+    children.filter(':not(.hide)').first().addClass('selected');
   });
 
   $(document).on('change', '.time-picker', function() {
@@ -110,7 +126,7 @@
     }
   });
 
-  $(document).on('focus', '.time-picker', function() {
+  $(document).on('focus', '.time-picker, .time-picker-tz', function() {
     saved[this.id] = $(this).val();
     $('.list-abs:visible').hide();
     $('.list-abs div.selected').removeClass('selected');
@@ -121,12 +137,12 @@
       top: $(this).position().top + $(this).outerHeight(),
       left: $(this).position().left
     });
-    $(next).children().filter('div[data-time="' + $(this).val() + '"]').addClass('selected'); // select current element.
+    $(next).children().filter('div[data-value="' + $(this).val() + '"]').addClass('selected'); // select current element.
     next.show();
-    next.scrollTop($(next).children().filter('div[data-time="' + $(this).val() + '"]').index() * $($('.list-abs:visible').children()[0]).height());
+    next.scrollTop($(next).children().filter('div[data-value="' + $(this).val() + '"]').index() * $($('.list-abs:visible').children()[0]).height());
   });
 
-  $(document).on('click', '.time-picker', function(event) {
+  $(document).on('click', '.time-picker, .time-picker-tz', function(event) {
     event.stopPropagation();
   });
 
@@ -134,7 +150,7 @@
     $('.list-abs:visible').hide();
   });
 
-  $(document).on('keydown', '.time-picker', function(event) {
+  $(document).on('keydown', '.time-picker, .time-picker-tz', function(event) {
     var keyCode = event.keyCode || event.which;
     switch (keyCode) {
       case 9: // Tab key
@@ -159,8 +175,8 @@
   });
 
   $('.list-abs').on('click', 'div', function() {
-    var time = $(this).data('time');
-    $(this).parent().prev().val(time);
+    var value = $(this).data('value');
+    $(this).parent().prev().val(value);
   });
 
 }( window.timer = window.timer || {}, jQuery ));
