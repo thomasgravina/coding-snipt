@@ -38,7 +38,7 @@
     if ($('.list-abs:visible').length === 0)
       return;
     $(this_).val($('.list-abs:visible div.selected').data('value'));
-    $(this_).next().hide();
+    $('.list-abs:visible').hide();
   }
 
   function computeKeyDown() {
@@ -77,8 +77,9 @@
 
   var validTime = function(value) {
     var regex = /^\d{1,2}:\d{2}\s?[ap]m$/i;
-    if (!$.trim(value).match(regex))
+    if (!$.trim(value).match(regex)) {
       return false;
+    }
     var data = value.split(':');
     var hours = parseInt(data[0]);
     var minutes = parseInt(data[1].substring(0, 2));
@@ -101,24 +102,6 @@
     $(this).after(html);
   });
 
-  $(document).on('keyup', '.time-picker-tz', function(event) {
-    var keyCode = event.keyCode || event.which;
-    if (keyCode == 38 || keyCode == 40)
-      return;
-    var value = $(this).val().replace(' ', '_');
-    var next = $(this).next();
-    var children = next.children();
-    children.each(function() {
-      $(this).removeClass('selected');
-      if ($(this).data('value').indexOf(value) == -1) {
-        $(this).addClass('hide');
-      } else {
-        $(this).removeClass('hide');
-      }
-    });
-    children.filter(':not(.hide)').first().addClass('selected');
-  });
-
   $(document).on('change', '.time-picker', function() {
     var value = $(this).val();
     if (!validTime(value)) {
@@ -126,11 +109,12 @@
     }
   });
 
-  $(document).on('focus', '.time-picker, .time-picker-tz', function() {
+  $(document).on('focus', '.time-picker', function() {
     saved[this.id] = $(this).val();
     $('.list-abs:visible').hide();
     $('.list-abs div.selected').removeClass('selected');
-    var next = $(this).next();
+    $('.list-abs div.hide').removeClass('hide');
+    var next = $(this).nextUntil('', 'div.list-abs').first();
     next.width($(this).outerWidth());
     next.css({
       position: "absolute",
@@ -142,7 +126,7 @@
     next.scrollTop($(next).children().filter('div[data-value="' + $(this).val() + '"]').index() * $($('.list-abs:visible').children()[0]).height());
   });
 
-  $(document).on('click', '.time-picker, .time-picker-tz', function(event) {
+  $(document).on('click', '.time-picker', function(event) {
     event.stopPropagation();
   });
 
@@ -150,7 +134,7 @@
     $('.list-abs:visible').hide();
   });
 
-  $(document).on('keydown', '.time-picker, .time-picker-tz', function(event) {
+  $(document).on('keydown', '.time-picker', function(event) {
     var keyCode = event.keyCode || event.which;
     switch (keyCode) {
       case 9: // Tab key
@@ -171,12 +155,15 @@
         event.preventDefault();
         computeKeyDown();
         break;
+      default:
+        $(this).nextUntil('', '.list-abs:visible').hide();
+        break;
     }
   });
 
   $('.list-abs').on('click', 'div', function() {
     var value = $(this).data('value');
-    $(this).parent().prev().val(value);
+    $(this).parent().prevUntil('', 'input').first().val(value);
   });
 
 }( window.timer = window.timer || {}, jQuery ));
